@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الاختبار البسيطة</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        #start-screen {
+            display: block;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 10px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2575fc;
+            font-weight: bold;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+            border: 2px solid transparent;
+        }
+        
+        .option:hover {
+            background-color: #e9e9e9;
+            transform: translateX(-5px);
+        }
+        
+        .option.selected {
+            background-color: #d1e7ff;
+            border-color: #2575fc;
+        }
+        
+        .option.correct {
+            background-color: #c8f7c8;
+            border-color: #2ecc71;
+        }
+        
+        .option.wrong {
+            background-color: #ffd1d1;
+            border-color: #e74c3c;
+        }
+        
+        .progress {
+            background-color: #f0f0f0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .score {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #2575fc;
+            font-weight: bold;
+        }
+        
+        .feedback {
+            font-size: 1.1rem;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: #c8f7c8;
+            color: #2ecc71;
+            display: block;
+        }
+        
+        .feedback.wrong {
+            background-color: #ffd1d1;
+            color: #e74c3c;
+            display: block;
+        }
+        
+        .result {
+            font-size: 1.3rem;
+            margin: 20px 0;
+            color: #2575fc;
+        }
+        
+        .emoji {
+            font-size: 3rem;
+            margin: 15px 0;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .question {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>لعبة الاختبار البسيطة</h1>
+        
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen">
+            <p>اختبر معلوماتك العامة في هذه اللعبة المسلية!</p>
+            <p>سيحتوي الاختبار على 10 أسئلة متنوعة.</p>
+            <button id="start-btn" class="btn">ابدأ اللعبة</button>
+        </div>
+        
+        <!-- شاشة الأسئلة -->
+        <div id="quiz-screen" class="screen">
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="score">السؤال: <span id="question-number">1</span>/10</div>
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+            <button id="next-btn" class="btn">التالي</button>
+        </div>
+        
+        <!-- شاشة النتائج -->
+        <div id="result-screen" class="screen">
+            <div class="emoji" id="result-emoji">🎉</div>
+            <div class="result" id="result-message">مبروك! لقد أكملت الاختبار</div>
+            <div class="score">درجتك: <span id="final-score">0</span>/10</div>
+            <button id="restart-btn" class="btn">العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        // الأسئلة والخيارات
+        const questions = [
+            {
+                question: "ما هي عاصمة المملكة العربية السعودية؟",
+                options: ["جدة", "الرياض", "مكة", "الدمام"],
+                correct: 1
+            },
+            {
+                question: "كم عدد أيام السنة الكبيسة؟",
+                options: ["365", "366", "364", "367"],
+                correct: 1
+            },
+            {
+                question: "ما هو أطول نهر في العالم؟",
+                options: ["النيل", "الأمازون", "الميسيسيبي", "الدانوب"],
+                correct: 0
+            },
+            {
+                question: "ما هو العنصر الكيميائي الذي رمزه 'O'؟",
+                options: ["ذهب", "أوكسجين", "فضة", "حديد"],
+                correct: 1
+            },
+            {
+                question: "في أي عام هبط الإنسان على سطح القمر لأول مرة؟",
+                options: ["1965", "1969", "1972", "1958"],
+                correct: 1
+            },
+            {
+                question: "ما هو أصغر كوكب في المجموعة الشمسية؟",
+                options: ["الأرض", "المريخ", "عطارد", "الزهرة"],
+                correct: 2
+            },
+            {
+                question: "من هو مؤلف كتاب 'البخلاء'؟",
+                options: ["الجاحظ", "المتنبي", "ابن خلدون", "أبو نواس"],
+                correct: 0
+            },
+            {
+                question: "ما هو الحيوان الوطني لأستراليا؟",
+                options: ["الكنغر", "الدب Koala", "الطائر Emu", "الكنغر والطائر Emu"],
+                correct: 3
+            },
+            {
+                question: "ما هي اللغة الأكثر انتشارًا في العالم من حيث عدد المتحدثين؟",
+                options: ["الإنجليزية", "الإسبانية", "العربية", "الصينية"],
+                correct: 3
+            },
+            {
+                question: "كم عدد أضلاع المثلث؟",
+                options: ["2", "3", "4", "5"],
+                correct: 1
+            }
+        ];
+
+        // عناصر DOM
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const feedbackElement = document.getElementById('feedback');
+        const questionNumberElement = document.getElementById('question-number');
+        const finalScoreElement = document.getElementById('final-score');
+        const progressBar = document.getElementById('progress-bar');
+        const resultMessage = document.getElementById('result-message');
+        const resultEmoji = document.getElementById('result-emoji');
+
+        // متغيرات اللعبة
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        // بدء اللعبة
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            selectedOption = null;
+            
+            startScreen.style.display = 'none';
+            resultScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            
+            showQuestion();
+        }
+
+        // عرض السؤال الحالي
+        function showQuestion() {
+            resetState();
+            
+            const question = questions[currentQuestion];
+            questionElement.textContent = question.question;
+            questionNumberElement.textContent = currentQuestion + 1;
+            
+            // تحديث شريط التقدم
+            progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+            
+            // إضافة الخيارات
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => selectOption(optionElement, index));
+                optionsElement.appendChild(optionElement);
+            });
+        }
+
+        // إعادة تعيين حالة الخيارات
+        function resetState() {
+            nextBtn.style.display = 'none';
+            feedbackElement.style.display = 'none';
+            feedbackElement.classList.remove('correct', 'wrong');
+            optionsElement.innerHTML = '';
+            selectedOption = null;
+        }
+
+        // اختيار خيار
+        function selectOption(optionElement, index) {
+            if (selectedOption !== null) return;
+            
+            selectedOption = index;
+            
+            // إزالة التحديد من جميع الخيارات
+            const allOptions = document.querySelectorAll('.option');
+            allOptions.forEach(option => option.classList.remove('selected'));
+            
+            // تحديد الخيار المختار
+            optionElement.classList.add('selected');
+            
+            // التحقق من الإجابة
+            const correct = questions[currentQuestion].correct;
+            
+            if (index === correct) {
+                optionElement.classList.add('correct');
+                feedbackElement.textContent = "إجابة صحيحة! أحسنت!";
+                feedbackElement.classList.add('correct');
+                score++;
+            } else {
+                optionElement.classList.add('wrong');
+                allOptions[correct].classList.add('correct');
+                feedbackElement.textContent = "إجابة خاطئة! الجواب الصحيح هو: " + questions[currentQuestion].options[correct];
+                feedbackElement.classList.add('wrong');
+            }
+            
+            feedbackElement.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        // الانتقال إلى السؤال التالي أو عرض النتائج
+        nextBtn.addEventListener('click', () => {
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        // عرض النتائج
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            finalScoreElement.textContent = score;
+            
+            // عرض رسالة مختلفة حسب النتيجة
+            if (score === questions.length) {
+                resultMessage.textContent = "مذهل! لقد أجبت على جميع الأسئلة بشكل صحيح!";
+                resultEmoji.textContent = "🏆";
+            } else if (score >= questions.length * 0.7) {
+                resultMessage.textContent = "أحسنت! نتيجة رائعة!";
+                resultEmoji.textContent = "🎉";
+            } else if (score >= questions.length * 0.5) {
+                resultMessage.textContent = "جيد! لكن يمكنك التحسين!";
+                resultEmoji.textContent = "👍";
+            } else {
+                resultMessage.textContent = "حاول مرة أخرى للتحسين!";
+                resultEmoji.textContent = "💪";
+            }
+        }
+    </script>
+</body>
+</html>
